@@ -2,13 +2,16 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using TMPro;
 public class MainSceneManager : MonoBehaviour
 {
     [Header("UI Elements")]
-    public Text welcomeText;
-    public Text counterText;
+    public TextMeshProUGUI welcomeText;
+    public TextMeshProUGUI counterText;
     public Button incrementButton;
     public Button updateContentButton;
+    public string[] spriteNames;
+    private int currentSpriteIndex = 0; 
 
     private void Start()
     {
@@ -21,18 +24,29 @@ public class MainSceneManager : MonoBehaviour
 
     private void UpdateCounterText()
     {
-        counterText.text = $"Counter: {GameManager.Instance.Counter}";
+        counterText.text = $"Счетчик: {GameManager.Instance.Counter}";
     }
 
     private void SetIncrementButtonBackground()
     {
-        if (GameManager.Instance.AssetBundle != null)
+        if (GameManager.Instance.AssetBundle != null && spriteNames.Length > 0)
         {
-            var sprite = GameManager.Instance.AssetBundle.LoadAsset<Sprite>("buttonBackground");
+            string spriteName = spriteNames[currentSpriteIndex];
+            var sprite = GameManager.Instance.AssetBundle.LoadAsset<Sprite>(spriteName);
+
             if (sprite != null)
             {
                 incrementButton.GetComponent<Image>().sprite = sprite;
+                currentSpriteIndex = (currentSpriteIndex + 1) % spriteNames.Length;
             }
+            else
+            {
+                Debug.LogError($"Sprite '{spriteName}' not found");
+            }
+        }
+        else
+        {
+            Debug.LogError("Asset Bundle is null or sprite names are empty.");
         }
     }
 
@@ -55,7 +69,12 @@ public class MainSceneManager : MonoBehaviour
         GameManager.Instance.Settings = JsonUtility.FromJson<Settings>(settingsJson.text);
         GameManager.Instance.WelcomeMessage = JsonUtility.FromJson<WelcomeMessage>(messageJson.text);
 
-        string bundlePath = Path.Combine(Application.streamingAssetsPath, "bundle");
+        if (GameManager.Instance.AssetBundle != null)
+        {
+            GameManager.Instance.AssetBundle.Unload(true); 
+        }
+
+        string bundlePath = Path.Combine(Application.streamingAssetsPath, "uibundle");
         var bundleRequest = AssetBundle.LoadFromFileAsync(bundlePath);
         yield return bundleRequest;
 
@@ -63,5 +82,11 @@ public class MainSceneManager : MonoBehaviour
 
         welcomeText.text = GameManager.Instance.WelcomeMessage.Message;
         SetIncrementButtonBackground();
+    }
+
+    public void QuitApp()
+    {
+        Debug.Log("exit");
+        Application.Quit();
     }
 }

@@ -23,12 +23,18 @@ public class LoadingManager : MonoBehaviour
         GameManager.Instance.Settings = JsonUtility.FromJson<Settings>(settingsJson.text);
         GameManager.Instance.WelcomeMessage = JsonUtility.FromJson<WelcomeMessage>(messageJson.text);
 
-        string bundlePath = Path.Combine(Application.streamingAssetsPath, "bundle");
-        var bundleRequest = AssetBundle.LoadFromFileAsync(bundlePath);
-        yield return bundleRequest;
+        if (GameManager.Instance.AssetBundle == null) 
+        {
+            Debug.Log("worked");
+            string bundlePath = Path.Combine(Application.streamingAssetsPath, "uibundle");
+            var bundleRequest = AssetBundle.LoadFromFileAsync(bundlePath);
+            yield return bundleRequest;
 
-        GameManager.Instance.AssetBundle = bundleRequest.assetBundle;
+            GameManager.Instance.AssetBundle = bundleRequest.assetBundle;
+        }
 
         progressBar.value = 1f;
     }
+
+
 }

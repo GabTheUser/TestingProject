@@ -19,7 +19,10 @@ public class GameManager : MonoBehaviour
             Instance = this;
             DontDestroyOnLoad(gameObject);
             saveFilePath = Path.Combine(Application.persistentDataPath, "save.json");
-            LoadGame();
+            Debug.Log(Application.persistentDataPath);
+
+            LoadMessageFromJson(); 
+            LoadGame(); 
         }
         else
         {
@@ -44,6 +47,19 @@ public class GameManager : MonoBehaviour
         else
         {
             Counter = Settings?.StartingNumber ?? 0;
+        }
+    }
+    public void LoadMessageFromJson()
+    {
+        var messageJson = Resources.Load<TextAsset>("Message");
+        if (messageJson != null)
+        {
+            WelcomeMessage = JsonUtility.FromJson<WelcomeMessage>(messageJson.text);
+            Debug.Log($"Message loaded: {WelcomeMessage.Message}");
+        }
+        else
+        {
+            Debug.LogError("Error: cant load message");
         }
     }
 
